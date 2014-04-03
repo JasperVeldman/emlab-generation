@@ -15,6 +15,10 @@
  ******************************************************************************/
 package emlab.gen.domain.technology;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.neo4j.graphdb.Direction;
@@ -27,8 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import emlab.gen.domain.agent.EnergyProducer;
 import emlab.gen.domain.contract.Loan;
+import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.domain.market.electricity.PowerPlantDispatchPlan;
 import emlab.gen.domain.market.electricity.Segment;
+import emlab.gen.domain.market.electricity.SegmentLoad;
 import emlab.gen.repository.PowerPlantDispatchPlanRepository;
 
 /**
@@ -81,11 +87,12 @@ public class PowerPlant {
     private double actualEfficiency;
     private double expectedEndOfLife;
     private double actualNominalCapacity;
+    private double totalHours;
 
     public boolean isOperational(long currentTick) {
 
-        double finishedConstruction = getConstructionStartTime()
-                + calculateActualPermittime() + calculateActualLeadtime();
+        double finishedConstruction = getConstructionStartTime() + calculateActualPermittime()
+                + calculateActualLeadtime();
 
         if (finishedConstruction <= currentTick) {
             // finished construction
@@ -107,8 +114,8 @@ public class PowerPlant {
 
     public boolean isExpectedToBeOperational(long time) {
 
-        double finishedConstruction = getConstructionStartTime()
-                + calculateActualPermittime() + calculateActualLeadtime();
+        double finishedConstruction = getConstructionStartTime() + calculateActualPermittime()
+                + calculateActualLeadtime();
 
         if (finishedConstruction <= time) {
             // finished construction
@@ -124,8 +131,8 @@ public class PowerPlant {
 
     public boolean isInPipeline(long currentTick) {
 
-        double finishedConstruction = getConstructionStartTime()
-                + calculateActualPermittime() + calculateActualLeadtime();
+        double finishedConstruction = getConstructionStartTime() + calculateActualPermittime()
+                + calculateActualLeadtime();
 
         if (finishedConstruction > currentTick) {
             // finished construction
@@ -145,8 +152,7 @@ public class PowerPlant {
         return false;
     }
 
-    public double getAvailableCapacity(long currentTick, Segment segment,
-            long numberOfSegments) {
+    public double getAvailableCapacity(long currentTick, Segment segment, long numberOfSegments) {
         if (isOperational(currentTick)) {
             double factor = 1;
             if (segment != null) {// if no segment supplied, assume we want full
@@ -154,12 +160,9 @@ public class PowerPlant {
                 double segmentID = segment.getSegmentID();
                 if ((int) segmentID != 1) {
 
-                    double min = getTechnology()
-                            .getPeakSegmentDependentAvailability();
-                    double max = getTechnology()
-                            .getBaseSegmentDependentAvailability();
-                    double segmentPortion = (numberOfSegments - segmentID)
-                            / (numberOfSegments - 1); // start
+                    double min = getTechnology().getPeakSegmentDependentAvailability();
+                    double max = getTechnology().getBaseSegmentDependentAvailability();
+                    double segmentPortion = (numberOfSegments - segmentID) / (numberOfSegments - 1); // start
                     // counting
                     // at
                     // 1.
@@ -169,8 +172,7 @@ public class PowerPlant {
                     factor = max - segmentPortion * range;
                     int i = 0;
                 } else {
-                    factor = getTechnology()
-                            .getPeakSegmentDependentAvailability();
+                    factor = getTechnology().getPeakSegmentDependentAvailability();
                 }
             }
             return getActualNominalCapacity() * factor;
@@ -179,19 +181,15 @@ public class PowerPlant {
         }
     }
 
-    public double getExpectedAvailableCapacity(long futureTick,
-            Segment segment, long numberOfSegments) {
+    public double getExpectedAvailableCapacity(long futureTick, Segment segment, long numberOfSegments) {
         if (isExpectedToBeOperational(futureTick)) {
             double factor = 1;
             if (segment != null) {// if no segment supplied, assume we want full
                 // capacity
                 double segmentID = segment.getSegmentID();
-                double min = getTechnology()
-                        .getPeakSegmentDependentAvailability();
-                double max = getTechnology()
-                        .getBaseSegmentDependentAvailability();
-                double segmentPortion = (numberOfSegments - segmentID)
-                        / (numberOfSegments - 1); // start
+                double min = getTechnology().getPeakSegmentDependentAvailability();
+                double max = getTechnology().getBaseSegmentDependentAvailability();
+                double segmentPortion = (numberOfSegments - segmentID) / (numberOfSegments - 1); // start
                 // counting
                 // at
                 // 1.
@@ -250,9 +248,8 @@ public class PowerPlant {
      * @return whether the plant is still in its technical lifetime.
      */
     public boolean isWithinTechnicalLifetime(long currentTick) {
-        long endOfTechnicalLifetime = getConstructionStartTime()
-                + calculateActualPermittime() + calculateActualLeadtime()
-                + calculateActualLifetime();
+        long endOfTechnicalLifetime = getConstructionStartTime() + calculateActualPermittime()
+                + calculateActualLeadtime() + calculateActualLifetime();
         if (endOfTechnicalLifetime <= currentTick) {
             return false;
         }
@@ -392,8 +389,7 @@ public class PowerPlant {
      * 
      * @param timeOfPermitorBuildingStart
      */
-    public void calculateAndSetActualInvestedCapital(
-            long timeOfPermitorBuildingStart) {
+    public void calculateAndSetActualInvestedCapital(long timeOfPermitorBuildingStart) {
         setActualInvestedCapital(this.getTechnology().getInvestmentCost(
                 timeOfPermitorBuildingStart + getActualLeadtime() + getActualPermittime())
                 * getActualNominalCapacity());
@@ -416,8 +412,7 @@ public class PowerPlant {
         for (SubstanceShareInFuelMix sub : this.getFuelMix()) {
             Substance substance = sub.getSubstance();
             double fuelAmount = sub.getShare();
-            double co2density = substance.getCo2Density()
-                    * (1 - this.getTechnology().getCo2CaptureEffciency());
+            double co2density = substance.getCo2Density() * (1 - this.getTechnology().getCo2CaptureEffciency());
 
             // determine the total cost per MWh production of this plant
             double emissionForThisFuel = fuelAmount * co2density;
@@ -433,15 +428,13 @@ public class PowerPlant {
         for (PowerPlantDispatchPlan plan : powerPlantDispatchPlanRepository
                 .findAllPowerPlantDispatchPlansForPowerPlantForTime(this, time)) {
             amount += plan.getSegment().getLengthInHours()
-                    * (plan.getCapacityLongTermContract() + plan
-                            .getAcceptedAmount());
+                    * (plan.getCapacityLongTermContract() + plan.getAcceptedAmount());
         }
         return amount;
     }
 
     public double calculateCO2EmissionsAtTime(long time) {
-        return this.calculateEmissionIntensity()
-                * calculateElectricityOutputAtTime(time);
+        return this.calculateEmissionIntensity() * calculateElectricityOutputAtTime(time);
     }
 
     @Transactional
@@ -464,14 +457,14 @@ public class PowerPlant {
      * @author J.C.Richstein
      */
     @Transactional
-    public void specifyAndPersist(long time, EnergyProducer energyProducer,
-            PowerGridNode location, PowerGeneratingTechnology technology) {
+    public void specifyAndPersist(long time, EnergyProducer energyProducer, PowerGridNode location,
+            PowerGeneratingTechnology technology) {
         specifyNotPersist(time, energyProducer, location, technology);
         this.persist();
     }
 
-    public void specifyNotPersist(long time, EnergyProducer energyProducer,
-            PowerGridNode location, PowerGeneratingTechnology technology) {
+    public void specifyNotPersist(long time, EnergyProducer energyProducer, PowerGridNode location,
+            PowerGeneratingTechnology technology) {
         String label = energyProducer.getName() + " - " + technology.getName();
         this.setName(label);
         this.setTechnology(technology);
@@ -486,8 +479,8 @@ public class PowerPlant {
         this.setDismantleTime(1000);
         this.calculateAndSetActualInvestedCapital(time);
         this.calculateAndSetActualFixedOperatingCosts(time);
-        this.setExpectedEndOfLife(time + getActualPermittime()
-                + getActualLeadtime() + getTechnology().getExpectedLifetime());
+        this.setExpectedEndOfLife(time + getActualPermittime() + getActualLeadtime()
+                + getTechnology().getExpectedLifetime());
     }
 
     @Transactional
@@ -541,6 +534,579 @@ public class PowerPlant {
      */
     public void setActualFixedOperatingCost(double actualFixedOperatingCost) {
         this.actualFixedOperatingCost = actualFixedOperatingCost;
+    }
+
+    public double getTotalHours(List<Double> segmentHoursList) {
+        double x = 0;
+        for (int s = 1; s < segmentHoursList.size(); s++) {
+            x = x + 1;
+        }
+        totalHours = x;
+        return totalHours;
+    }
+
+    public double getAvailableHydroPowerCapacity(long currentTick, Segment segment, long numberOfSegments,
+            ElectricitySpotMarket market, double intermittentBase, double intermittentPeak, double intermittentTotal) {
+        double segmentID = segment.getSegmentID();
+        double sumLoadDifference = 0;
+        double energyDeliveredPrevious;
+        double energyAvailable;
+        double totalHoursModel;
+        double segmentLoadOld = 0;
+        double segmentLoadNew;
+        double loadDifference = 0;
+        double remainingLoadDifference;
+        double fullHours;
+        double loadOfSegment;
+        double segmentIDHydro = 0;
+        double segmentIDHydroLoad;
+        double obtainOldCapacity = 0;
+        double availableCapacity = 0;
+        double declareNewCapacity = 0;
+        double baseLoad;
+        double totalCapacity = 0;
+        double totalHoursList = 0;
+        double fullCapacity;
+        double energyDeliveredOfferList = 0;
+        double energyDeliveredCapacityList;
+        double energyDeliveredTotal = 0;
+        double residualLoad = 0;
+        boolean capacityConstrained;
+
+        double factor = 0;
+        List<Double> loadList = new ArrayList<Double>();
+        List<Double> hoursList = new ArrayList<Double>();
+        List<Double> sortedHoursList = new ArrayList<Double>();
+        List<Double> segmentHoursListCurrent = new ArrayList<Double>();
+        List<Double> segmentHoursListOffered = new ArrayList<Double>();
+        List<Double> loadDifferenceList = new ArrayList<Double>();
+        List<Double> capacityList = new ArrayList<Double>();
+        List<Double> offerList = new ArrayList<Double>();
+
+        if (isOperational(currentTick)) {
+
+            loadList.clear();
+
+            for (SegmentLoad segmentload : market.getLoadDurationCurve()) {
+                Segment segmentHydroLoad = segmentload.getSegment();
+                baseLoad = segmentload.getBaseLoad() * market.getDemandGrowthTrend().getValue(currentTick);
+                segmentIDHydroLoad = segmentHydroLoad.getSegmentID();
+
+                if (segmentIDHydroLoad != numberOfSegments) {
+
+                    double segmentPortionHydro = (numberOfSegments - segmentIDHydroLoad) / (numberOfSegments - 1);
+                    double range = intermittentBase - intermittentPeak;
+                    factor = intermittentBase - segmentPortionHydro * range;
+                    residualLoad = baseLoad - factor * intermittentTotal;
+                    if (residualLoad > 0) {
+                        loadList.add(residualLoad);
+                        hoursList.add(segmentHydroLoad.getLengthInHours());
+                    } else {
+                        continue;
+                    }
+
+                } else {
+                    if (residualLoad > 0) {
+                        factor = intermittentBase;
+                        residualLoad = baseLoad - factor * intermittentTotal;
+                        loadList.add(residualLoad);
+                        hoursList.add(segmentHydroLoad.getLengthInHours());
+                    } else {
+                        continue;
+                    }
+
+                }
+
+            }
+
+            double count = 0;
+            loadList.add(count);
+            hoursList.add(count);
+
+            HashMap<Double, Double> sorting = new HashMap<Double, Double>();
+
+            for (int g = 0; g < loadList.size(); g++) {
+                sorting.put(loadList.get(g), hoursList.get(g));
+            }
+
+            Collections.sort(loadList, Collections.reverseOrder());
+
+            for (int h = 0; h < loadList.size(); h++) {
+                double x = loadList.get(h);
+                double y = sorting.get(x);
+                sortedHoursList.add(y);
+            }
+
+            offerList.clear();
+            segmentHoursListCurrent.clear();
+            loadDifferenceList.clear();
+            capacityList.clear();
+
+            for (int i = 1; i <= loadList.size(); i++) {
+
+                segmentIDHydro = i;
+                segmentHoursListCurrent.add(sortedHoursList.get(i - 1));
+                if (segmentIDHydro == 1) {
+
+                    loadOfSegment = loadList.get(i - 1);
+                    segmentLoadOld = loadOfSegment;
+
+                    continue;
+
+                } else {
+                    int y = i - 1;
+                    loadOfSegment = loadList.get(y);
+                    segmentLoadNew = loadOfSegment;
+                    loadDifference = segmentLoadOld - segmentLoadNew;
+                    remainingLoadDifference = loadDifference;
+                    segmentLoadOld = loadOfSegment;
+                    loadDifferenceList.add(loadDifference);
+
+                }
+
+                energyDeliveredPrevious = 0;
+                for (int q = 0; q < capacityList.size(); q++) {
+                    energyDeliveredPrevious = energyDeliveredPrevious + segmentHoursListCurrent.get(q)
+                            * capacityList.get(q);
+                }
+
+                sumLoadDifference = 0;
+                for (int j = 0; j < loadDifferenceList.size(); j++) {
+                    sumLoadDifference = sumLoadDifference + loadDifferenceList.get(j);
+                    totalCapacity = loadDifferenceList.get(0);
+
+                }
+
+                // if (sumList == 0) {
+                // totalCapacity = segmentHoursListCurrent.get(0) +
+                // segmentHoursListCurrent.get(1);
+                // return totalCapacity;
+                // }
+
+                if (sumLoadDifference <= getActualNominalCapacity()) {
+                    if (capacityList.size() == 0) {
+                        capacityList.add(loadDifference);
+                    } else {
+
+                        for (int l = 0; l < capacityList.size(); l++) {
+                            obtainOldCapacity = capacityList.get(l);
+                            declareNewCapacity = obtainOldCapacity + loadDifference;
+                            capacityList.set(l, declareNewCapacity);
+                        }
+                        capacityList.add(loadDifference);
+                    }
+
+                    energyDeliveredCapacityList = 0;
+                    for (int q = 0; q < capacityList.size(); q++) {
+                        energyDeliveredCapacityList = capacityList.get(q) * segmentHoursListCurrent.get(q)
+                                + energyDeliveredCapacityList;
+                    }
+                    energyDeliveredOfferList = 0;
+                    for (int t = 0; t < offerList.size(); t++) {
+                        energyDeliveredOfferList = energyDeliveredOfferList + segmentHoursListOffered.get(t)
+                                * offerList.get(t);
+                    }
+
+                    energyDeliveredTotal = energyDeliveredCapacityList + energyDeliveredOfferList;
+
+                    if (energyDeliveredTotal <= getTechnology().getEnergyConstraint()) {
+                        continue;
+                    } else {
+
+                        for (int l = 0; l < capacityList.size(); l++) {
+                            obtainOldCapacity = capacityList.get(l);
+                            declareNewCapacity = obtainOldCapacity - loadDifference;
+                            capacityList.set(l, declareNewCapacity);
+                        }
+
+                        energyDeliveredCapacityList = 0;
+                        for (int u = 0; u < capacityList.size(); u++) {
+                            energyDeliveredCapacityList += capacityList.get(u) * segmentHoursListCurrent.get(u);
+                        }
+
+                        energyDeliveredOfferList = 0;
+                        for (int t = 0; t < offerList.size(); t++) {
+                            energyDeliveredOfferList = energyDeliveredOfferList + segmentHoursListOffered.get(t)
+                                    * offerList.get(t);
+                        }
+
+                        energyDeliveredTotal = energyDeliveredCapacityList + energyDeliveredOfferList;
+
+                        energyAvailable = getTechnology().getEnergyConstraint() - energyDeliveredTotal;
+
+                        totalHoursModel = 0;
+                        for (int s = 1; s < segmentHoursListCurrent.size(); s++) {
+                            totalHoursModel = totalHoursModel + segmentHoursListCurrent.get(s - 1);
+                        }
+
+                        availableCapacity = energyAvailable / totalHoursModel;
+
+                        for (int l = 0; l < capacityList.size(); l++) {
+                            obtainOldCapacity = capacityList.get(l);
+                            declareNewCapacity = obtainOldCapacity + availableCapacity;
+                            offerList.add(declareNewCapacity);
+                        }
+
+                        if (offerList.size() >= segmentID) {
+                            return offerList.get((int) (segmentID - 1));
+
+                        } else {
+                            return 0;
+                        }
+
+                    }
+                } else {
+
+                    if (loadDifferenceList.size() == 1) {
+
+                        availableCapacity = getActualNominalCapacity();
+
+                        energyDeliveredCapacityList = availableCapacity * segmentHoursListCurrent.get(0);
+
+                        energyDeliveredOfferList = 0;
+                        for (int t = 0; t < offerList.size(); t++) {
+                            energyDeliveredOfferList = energyDeliveredOfferList + segmentHoursListOffered.get(t)
+                                    * offerList.get(t);
+                        }
+
+                        energyDeliveredTotal = energyDeliveredOfferList + energyDeliveredCapacityList;
+
+                        if (energyDeliveredTotal <= getTechnology().getEnergyConstraint()) {
+                            fullHours = segmentHoursListCurrent.get(0);
+                            segmentHoursListOffered.add(fullHours);
+                            offerList.add(availableCapacity);
+                            segmentHoursListCurrent.remove(0);
+                            loadDifferenceList.remove(0);
+
+                            continue;
+                        } else {
+                            energyDeliveredTotal = energyDeliveredPrevious + energyDeliveredOfferList;
+                            energyAvailable = getTechnology().getEnergyConstraint() - energyDeliveredTotal;
+
+                            totalHoursModel = segmentHoursListCurrent.get(0);
+                            availableCapacity = energyAvailable / totalHoursModel;
+
+                            if (offerList.size() >= segmentID) {
+                                return offerList.get((int) (segmentID - 1));
+
+                            } else {
+                                return 0;
+                            }
+
+                        }
+                    } else {
+
+                        availableCapacity = getActualNominalCapacity() - capacityList.get(0);
+
+                        remainingLoadDifference = loadDifference - availableCapacity;
+                        sumLoadDifference = sumLoadDifference - loadDifferenceList.get(0);
+
+                        for (int l = 0; l < capacityList.size(); l++) {
+                            obtainOldCapacity = capacityList.get(l);
+                            declareNewCapacity = obtainOldCapacity + availableCapacity;
+                            capacityList.set(l, declareNewCapacity);
+                        }
+                        capacityList.add(availableCapacity);
+
+                        capacityConstrained = true;
+
+                        while (capacityConstrained = true) {
+                            energyDeliveredCapacityList = 0;
+                            for (int q = 0; q < capacityList.size(); q++) {
+                                energyDeliveredCapacityList = capacityList.get(q) * segmentHoursListCurrent.get(q)
+                                        + energyDeliveredCapacityList;
+                            }
+                            energyDeliveredOfferList = 0;
+                            for (int t = 0; t < offerList.size(); t++) {
+                                energyDeliveredOfferList = energyDeliveredOfferList + segmentHoursListOffered.get(t)
+                                        * offerList.get(t);
+                            }
+
+                            energyDeliveredTotal = energyDeliveredCapacityList + energyDeliveredOfferList;
+
+                            if (energyDeliveredTotal <= getTechnology().getEnergyConstraint()) {
+                                loadDifferenceList.remove(0);
+                                fullCapacity = capacityList.get(0);
+                                fullHours = segmentHoursListCurrent.get(0);
+                                segmentHoursListOffered.add(fullHours);
+                                offerList.add(fullCapacity);
+                                capacityList.remove(0);
+                                segmentHoursListCurrent.remove(0);
+
+                                if (loadDifferenceList.size() == 1) {
+
+                                    if (remainingLoadDifference < getActualNominalCapacity()) {
+
+                                        // /// VERIFIED
+                                        availableCapacity = remainingLoadDifference;
+                                        energyDeliveredCapacityList = (availableCapacity + capacityList.get(0))
+                                                * segmentHoursListCurrent.get(0);
+
+                                        energyDeliveredTotal = energyDeliveredOfferList + energyDeliveredCapacityList;
+
+                                        if (energyDeliveredTotal <= getTechnology().getEnergyConstraint()) {
+                                            obtainOldCapacity = capacityList.get(0);
+                                            declareNewCapacity = obtainOldCapacity + availableCapacity;
+                                            capacityList.set(0, declareNewCapacity);
+                                            break;
+                                            // / NOT YET DONE
+
+                                        } else {
+                                            energyDeliveredCapacityList = (capacityList.get(0) * segmentHoursListCurrent
+                                                    .get(0));
+
+                                            energyDeliveredOfferList = 0;
+                                            for (int t = 0; t < offerList.size(); t++) {
+                                                energyDeliveredOfferList = energyDeliveredOfferList
+                                                        + segmentHoursListOffered.get(t) * offerList.get(t);
+                                            }
+
+                                            energyDeliveredTotal = energyDeliveredCapacityList
+                                                    + energyDeliveredOfferList;
+                                            energyAvailable = getTechnology().getEnergyConstraint()
+                                                    - energyDeliveredTotal;
+
+                                            totalHoursModel = segmentHoursListCurrent.get(0);
+                                            availableCapacity = energyAvailable / totalHoursModel;
+                                            totalCapacity = availableCapacity + capacityList.get(0);
+                                            offerList.add(totalCapacity);
+
+                                            if (offerList.size() >= segmentID) {
+                                                return offerList.get((int) (segmentID - 1));
+
+                                            } else {
+                                                return 0;
+                                            }
+                                            // DONE
+
+                                        }
+
+                                    } else {
+                                        availableCapacity = getActualNominalCapacity();
+
+                                    }
+
+                                    energyDeliveredCapacityList = (availableCapacity + capacityList.get(0))
+                                            * segmentHoursListCurrent.get(0);
+
+                                    energyDeliveredOfferList = 0;
+                                    for (int t = 0; t < offerList.size(); t++) {
+                                        energyDeliveredOfferList = energyDeliveredOfferList
+                                                + segmentHoursListOffered.get(t) * offerList.get(t);
+                                    }
+
+                                    energyDeliveredTotal = energyDeliveredOfferList + energyDeliveredCapacityList;
+
+                                    if (energyDeliveredTotal <= getTechnology().getEnergyConstraint()) {
+                                        loadDifferenceList.remove(0);
+                                        fullHours = segmentHoursListCurrent.get(0);
+                                        segmentHoursListOffered.add(fullHours);
+                                        offerList.add(availableCapacity);
+                                        segmentHoursListCurrent.remove(0);
+                                        capacityList.clear();
+                                        break;
+                                        // / NOT YET DONE
+
+                                    } else {
+                                        energyDeliveredCapacityList = (capacityList.get(0) * segmentHoursListCurrent
+                                                .get(0));
+
+                                        energyDeliveredTotal = energyDeliveredCapacityList + energyDeliveredOfferList;
+                                        energyAvailable = getTechnology().getEnergyConstraint() - energyDeliveredTotal;
+
+                                        totalHoursModel = segmentHoursListCurrent.get(0);
+                                        availableCapacity = energyAvailable / totalHoursModel;
+                                        totalCapacity = availableCapacity + capacityList.get(0);
+                                        offerList.add(totalCapacity);
+
+                                        if (offerList.size() >= segmentID) {
+                                            return offerList.get((int) (segmentID - 1));
+
+                                        } else {
+                                            return 0;
+                                        }
+                                        // DONE
+
+                                    }
+
+                                } else {
+                                    if (sumLoadDifference <= getActualNominalCapacity()) {
+                                        // /// VERIFIED DONE
+                                        for (int l = 0; l < capacityList.size(); l++) {
+                                            obtainOldCapacity = capacityList.get(l);
+                                            declareNewCapacity = obtainOldCapacity + remainingLoadDifference;
+                                            capacityList.set(l, declareNewCapacity);
+                                        }
+
+                                        energyDeliveredCapacityList = 0;
+                                        for (int q = 0; q < capacityList.size(); q++) {
+                                            energyDeliveredCapacityList = capacityList.get(q)
+                                                    * segmentHoursListCurrent.get(q) + energyDeliveredCapacityList;
+                                        }
+                                        energyDeliveredOfferList = 0;
+                                        for (int t = 0; t < offerList.size(); t++) {
+                                            energyDeliveredOfferList = energyDeliveredOfferList
+                                                    + segmentHoursListOffered.get(t) * offerList.get(t);
+                                        }
+
+                                        energyDeliveredTotal = energyDeliveredCapacityList + energyDeliveredOfferList;
+
+                                        if (energyDeliveredTotal <= getTechnology().getEnergyConstraint()) {
+                                            break;
+                                        } else {
+                                            for (int l = 0; l < capacityList.size(); l++) {
+                                                obtainOldCapacity = capacityList.get(l);
+                                                declareNewCapacity = obtainOldCapacity - remainingLoadDifference;
+                                                capacityList.set(l, declareNewCapacity);
+                                            }
+
+                                            energyDeliveredCapacityList = 0;
+                                            for (int q = 0; q < capacityList.size(); q++) {
+                                                energyDeliveredCapacityList = capacityList.get(q)
+                                                        * segmentHoursListCurrent.get(q) + energyDeliveredCapacityList;
+                                            }
+
+                                            energyDeliveredTotal = energyDeliveredCapacityList
+                                                    + energyDeliveredOfferList;
+
+                                            energyAvailable = getTechnology().getEnergyConstraint()
+                                                    - energyDeliveredTotal;
+                                            totalHoursModel = 0;
+                                            for (int s = 1; s < segmentHoursListCurrent.size(); s++) {
+                                                totalHoursModel = totalHoursModel + segmentHoursListCurrent.get(s - 1);
+                                            }
+
+                                            availableCapacity = energyAvailable / totalHoursModel;
+
+                                            for (int l = 0; l < capacityList.size(); l++) {
+                                                obtainOldCapacity = capacityList.get(l);
+                                                declareNewCapacity = obtainOldCapacity + availableCapacity;
+                                                offerList.add(declareNewCapacity);
+                                            }
+
+                                            if (offerList.size() >= segmentID) {
+                                                return offerList.get((int) (segmentID - 1));
+                                            } else {
+                                                return 0;
+                                            }
+                                            // / DONE
+                                        }
+
+                                    } else {
+                                        // VERIFIED
+                                        availableCapacity = getActualNominalCapacity() - capacityList.get(0);
+                                        remainingLoadDifference = remainingLoadDifference - availableCapacity;
+
+                                        sumLoadDifference = sumLoadDifference - loadDifferenceList.get(0);
+
+                                        for (int l = 0; l < capacityList.size(); l++) {
+                                            obtainOldCapacity = capacityList.get(l);
+                                            declareNewCapacity = obtainOldCapacity + availableCapacity;
+                                            capacityList.set(l, declareNewCapacity);
+                                        }
+                                        capacityConstrained = true;
+                                        ;
+
+                                    }
+
+                                }
+
+                            } else {
+                                // /VERIFIED
+
+                                for (int l = 0; l < capacityList.size(); l++) {
+                                    obtainOldCapacity = capacityList.get(l);
+                                    declareNewCapacity = obtainOldCapacity - availableCapacity;
+                                    if (declareNewCapacity == 0) {
+                                        capacityList.set(l, (double) 0);
+
+                                    } else {
+                                        capacityList.set(l, declareNewCapacity);
+                                    }
+                                    // Calculate capacity
+                                }
+
+                                energyDeliveredCapacityList = 0;
+                                for (int q = 0; q < capacityList.size(); q++) {
+                                    energyDeliveredCapacityList = capacityList.get(q) * segmentHoursListCurrent.get(q)
+                                            + energyDeliveredCapacityList;
+                                }
+                                energyDeliveredOfferList = 0;
+                                for (int t = 0; t < offerList.size(); t++) {
+                                    energyDeliveredOfferList = energyDeliveredOfferList
+                                            + segmentHoursListOffered.get(t) * offerList.get(t);
+                                }
+
+                                energyDeliveredTotal = energyDeliveredCapacityList + energyDeliveredOfferList;
+
+                                energyAvailable = getTechnology().getEnergyConstraint() - energyDeliveredTotal;
+
+                                totalHoursModel = 0;
+                                for (int s = 1; s < segmentHoursListCurrent.size(); s++) {
+                                    totalHoursModel = totalHoursModel + segmentHoursListCurrent.get(s - 1);
+                                }
+
+                                availableCapacity = energyAvailable / totalHoursModel;
+
+                                for (int l = 0; l < capacityList.size(); l++) {
+                                    obtainOldCapacity = capacityList.get(l);
+                                    declareNewCapacity = obtainOldCapacity + availableCapacity;
+                                    offerList.add(declareNewCapacity);
+                                }
+
+                                if (offerList.size() >= segmentID) {
+                                    return offerList.get((int) (segmentID - 1));
+
+                                } else {
+                                    return 0;
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (capacityList.size() > 0) {
+                for (int c = 0; c < capacityList.size(); c++) {
+                    fullCapacity = capacityList.get(c);
+                    offerList.add(fullCapacity);
+
+                }
+            }
+
+            HashMap<Integer, Double> segmentOffer = new HashMap<Integer, Double>();
+
+            for (int g = 1; g <= offerList.size(); g++) {
+                segmentOffer.put(g, offerList.get(g - 1));
+            }
+
+            if (offerList.size() >= segmentID) {
+                return offerList.get((int) (segmentID - 1));
+
+            } else {
+                return 0;
+            }
+
+        } else {
+            return 0;
+        }
+
+    }
+
+    public double getAValue(long currentTick) {
+        List<Double> segmentHoursListOffered = new ArrayList<Double>();
+        double y = 0;
+        if (isOperational(currentTick)) {
+            for (int g = 1; g <= segmentHoursListOffered.size(); g++) {
+                y = g + 2 * g;
+            }
+        }
+        if (y > 0) {
+            return currentTick - 1;
+        } else {
+            return currentTick;
+        }
     }
 
 }
