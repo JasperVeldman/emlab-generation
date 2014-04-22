@@ -42,7 +42,7 @@ public class TriangularTrend extends TimeSeriesImpl implements Trend {
     private String previousValues;
     private double start;
 
-	@Override
+    @Override
     @Transactional
     public double getValue(long time) {
 
@@ -122,12 +122,26 @@ public class TriangularTrend extends TimeSeriesImpl implements Trend {
         this.top = top;
     }
 
+    @Override
     public double getStart() {
         return start;
     }
 
+    @Override
     public void setStart(double start) {
         this.start = start;
+    }
+
+    public double getEnergyValue() {
+        double randomValue = Distributions.nextTriangular(RandomEngine.makeDefault());
+        double translatedValue = 0d;
+        if (randomValue < 0) {
+            translatedValue = getTop() + (randomValue * (getTop() - getMin()));
+        } else {
+            translatedValue = getTop() + (randomValue * (getMax() - getTop()));
+        }
+        return translatedValue;
+
     }
 
 }

@@ -15,9 +15,9 @@
  ******************************************************************************/
 package emlab.gen.domain.market.electricity;
 
+import org.neo4j.graphdb.Direction;
 import org.springframework.data.neo4j.annotation.NodeEntity;
 import org.springframework.data.neo4j.annotation.RelatedTo;
-import org.neo4j.graphdb.Direction;
 
 import emlab.gen.domain.market.ClearingPoint;
 
@@ -34,4 +34,5 @@ public class SegmentClearingPoint extends ClearingPoint {
     public void setSegment(Segment segment) {
         this.segment = segment;
     }
+
 }

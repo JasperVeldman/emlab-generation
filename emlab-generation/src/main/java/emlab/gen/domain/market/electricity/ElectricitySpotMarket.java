@@ -23,6 +23,7 @@ import org.springframework.data.neo4j.annotation.RelatedTo;
 
 import emlab.gen.domain.market.DecarbonizationMarket;
 import emlab.gen.trend.TimeSeriesImpl;
+import emlab.gen.trend.TriangularTrend;
 
 @NodeEntity
 public class ElectricitySpotMarket extends DecarbonizationMarket {
@@ -30,8 +31,11 @@ public class ElectricitySpotMarket extends DecarbonizationMarket {
     @RelatedTo(type = "SEGMENT_LOAD", elementClass = SegmentLoad.class, direction = Direction.OUTGOING)
     private Set<SegmentLoad> loadDurationCurve;
 
-	@RelatedTo(type = "DEMANDGROWTH_TREND", elementClass = TimeSeriesImpl.class, direction = Direction.OUTGOING)
-	private TimeSeriesImpl demandGrowthTrend;
+    @RelatedTo(type = "DEMANDGROWTH_TREND", elementClass = TimeSeriesImpl.class, direction = Direction.OUTGOING)
+    private TimeSeriesImpl demandGrowthTrend;
+
+    @RelatedTo(type = "ENERGYCONSTRAINT_TREND", elementClass = TriangularTrend.class, direction = Direction.OUTGOING)
+    private TriangularTrend energyConstraintTrend;
 
     private double valueOfLostLoad;
 
@@ -51,12 +55,20 @@ public class ElectricitySpotMarket extends DecarbonizationMarket {
         this.valueOfLostLoad = valueOfLostLoad;
     }
 
-	public TimeSeriesImpl getDemandGrowthTrend() {
+    public TimeSeriesImpl getDemandGrowthTrend() {
         return demandGrowthTrend;
     }
 
-	public void setDemandGrowthTrend(TimeSeriesImpl demandGrowthTrend) {
+    public void setDemandGrowthTrend(TimeSeriesImpl demandGrowthTrend) {
         this.demandGrowthTrend = demandGrowthTrend;
+    }
+
+    public TriangularTrend getEnergyConstraintTrend() {
+        return energyConstraintTrend;
+    }
+
+    public void setEnergyConstraintTrend(TriangularTrend energyConstraintTrend) {
+        this.energyConstraintTrend = energyConstraintTrend;
     }
 
 }
