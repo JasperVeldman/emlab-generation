@@ -42,7 +42,8 @@ public class SingleElectricityMarketInformation {
     Map<PowerPlant, Double> meritOrder;
     double capacitySum;
 
-    SingleElectricityMarketInformation(ElectricitySpotMarket market, Map<Substance, Double> fuelPrices, double co2price, long time) {
+    SingleElectricityMarketInformation(ElectricitySpotMarket market, Map<Substance, Double> fuelPrices,
+            double co2price, long time) {
         // determine expected power prices
         expectedElectricityPricesPerSegment = new HashMap<Segment, Double>();
         Map<PowerPlant, Double> marginalCostMap = new HashMap<PowerPlant, Double>();
@@ -53,7 +54,7 @@ public class SingleElectricityMarketInformation {
 
             double plantMarginalCost = determineExpectedMarginalCost(plant, fuelPrices, co2price);
             marginalCostMap.put(plant, plantMarginalCost);
-			capacitySum += plant.getActualNominalCapacity();
+            capacitySum += plant.getActualNominalCapacity();
         }
 
         MapValueComparator comp = new MapValueComparator(marginalCostMap);
@@ -107,7 +108,8 @@ public class SingleElectricityMarketInformation {
         }
     }
 
-    public double determineExpectedMarginalCost(PowerPlant plant, Map<Substance, Double> expectedFuelPrices, double expectedCO2Price) {
+    public double determineExpectedMarginalCost(PowerPlant plant, Map<Substance, Double> expectedFuelPrices,
+            double expectedCO2Price) {
         double mc = determineExpectedMarginalFuelCost(plant, expectedFuelPrices);
         double co2Intensity = calculateCO2Intensity(plant);
         mc += co2Intensity * expectedCO2Price;

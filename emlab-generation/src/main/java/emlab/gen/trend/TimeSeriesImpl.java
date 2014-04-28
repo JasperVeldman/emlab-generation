@@ -19,9 +19,11 @@ import org.springframework.data.neo4j.annotation.NodeEntity;
 
 import agentspring.trend.TimeSeries;
 
+
+
 /**
  * @author JCRichstein
- * 
+ *
  */
 @NodeEntity
 public class TimeSeriesImpl implements TimeSeries {
@@ -43,6 +45,10 @@ public class TimeSeriesImpl implements TimeSeries {
         return timeSeries[(int) time - (int) startingYear];
     }
 
+    public void setValue(long time, double value) {
+        timeSeries[(int) time - (int) startingYear] = value;
+    }
+
     public double[] getTimeSeries() {
         return timeSeries;
     }
@@ -58,5 +64,7 @@ public class TimeSeriesImpl implements TimeSeries {
     public void setStartingYear(double startingYear) {
         this.startingYear = startingYear;
     }
+
+
 
 }

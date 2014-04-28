@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.math.stat.regression.SimpleRegression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.data.annotation.Transient;
@@ -31,12 +32,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import agentspring.role.Role;
 import emlab.gen.domain.agent.BigBank;
+import emlab.gen.domain.agent.DecarbonizationModel;
 import emlab.gen.domain.agent.EnergyProducer;
+import emlab.gen.domain.agent.Government;
 import emlab.gen.domain.agent.PowerPlantManufacturer;
 import emlab.gen.domain.agent.StrategicReserveOperator;
 import emlab.gen.domain.contract.CashFlow;
 import emlab.gen.domain.contract.Loan;
 import emlab.gen.domain.gis.Zone;
+import emlab.gen.domain.market.CO2Auction;
 import emlab.gen.domain.market.ClearingPoint;
 import emlab.gen.domain.market.electricity.ElectricitySpotMarket;
 import emlab.gen.domain.market.electricity.Segment;
@@ -65,8 +69,8 @@ import emlab.gen.util.MapValueComparator;
  */
 @Configurable
 @NodeEntity
-public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> extends GenericInvestmentRole<T>
-        implements Role<T>, NodeBacked {
+public class InvestInPowerGenerationTechnologiesWithCO2ForecastRole<T extends EnergyProducer> extends
+        GenericInvestmentRole<T> implements Role<T>, NodeBacked {
 
     @Transient
     @Autowired
@@ -95,8 +99,16 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
         Map<Substance, Double> expectedFuelPrices = predictFuelPrices(agent, futureTimePoint);
 
         // CO2
-        Map<ElectricitySpotMarket, Double> expectedCO2Price = determineExpectedCO2PriceInclTax(futureTimePoint,
+        Map<ElectricitySpotMarket, Double> expectedCO2Price = determineExpectedCO2PriceInclTaxAndFundamentalForecast(
+                futureTimePoint, agent.getNumberOfYearsBacklookingForForecasting(), 0, getCurrentTick());
+
+        // logger.warn("{} expects CO2 prices {}", agent.getName(),
+        // expectedCO2Price);
+
+        Map<ElectricitySpotMarket, Double> expectedCO2PriceOld = determineExpectedCO2PriceInclTax(futureTimePoint,
                 agent.getNumberOfYearsBacklookingForForecasting(), getCurrentTick());
+        // logger.warn("{} used to expect CO2 prices {}", agent.getName(),
+        // expectedCO2PriceOld);
 
         // logger.warn(expectedCO2Price.toString());
 
@@ -397,12 +409,13 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
             // getCurrentTick()-(agent.getNumberOfYearsBacklookingForForecasting()-1),
             // getCurrentTick());
             // Create regression object
-            GeometricTrendRegression gtr = new GeometricTrendRegression();
+            SimpleRegression gtr = new SimpleRegression();
             for (ClearingPoint clearingPoint : cps) {
                 // logger.warn("CP {}: {} , in" + clearingPoint.getTime(),
                 // substance.getName(), clearingPoint.getPrice());
                 gtr.addData(clearingPoint.getTime(), clearingPoint.getPrice());
             }
+            gtr.addData(getCurrentTick(), findLastKnownPriceForSubstance(substance, getCurrentTick()));
             expectedFuelPrices.put(substance, gtr.predict(futureTimePoint));
             // logger.warn("Forecast {}: {}, in Step " + futureTimePoint,
             // substance, expectedFuelPrices.get(substance));
@@ -537,6 +550,7 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
             long numberOfSegments = reps.segmentRepository.count();
 
             double demandFactor = expectedDemand.get(market).doubleValue();
+            // find expected prices per segment given merit order
 
             for (PowerPlant plant : reps.powerPlantRepository.findOperationalPowerPlantsAsList(getCurrentTick())) {
                 PowerGeneratingTechnology technology = plant.getTechnology();
@@ -655,15 +669,13 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
                 }
 
             }
-
             double energyConstraint = market.getEnergyConstraintTrend().getEnergyValue();
 
-            // find expected prices per segment given merit order
             for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
 
                 Segment segment = segmentLoad.getSegment();
-                double segmentID = segment.getSegmentID();
                 double hydroCapacity = 0;
+                double segmentID = segment.getSegmentID();
 
                 for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market,
                         time)) {
@@ -673,12 +685,14 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
                         hydroCapacity = plant.getExpectedAvailableHydroPowerCapacity(time, getCurrentTick(), segment,
                                 numberOfSegments, market, intermittentBase, intermittentPeak, intermittentTotal,
                                 energyConstraint, interconnectorA, interconnectorB, demandFactor);
+
                         break;
                     } else {
                         continue;
                     }
 
                 }
+
                 double interconnectorFlowSegment = 0;
                 if (market.getZone().getName().equals("Country A")) {
                     interconnectorFlowSegment = -1 * interconnectorA.get(segmentID);
@@ -748,6 +762,71 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
 
             }
         }
+    }
+
+    /**
+     * Calculates expected CO2 price based on a geometric trend estimation, of
+     * the past years. The adjustmentForDetermineFuelMix needs to be set to 1,
+     * if this is used in the determine fuel mix role.
+     * 
+     * @param futureTimePoint
+     *            Year the prediction is made for
+     * @param yearsLookingBackForRegression
+     *            How many years are used as input for the regression, incl. the
+     *            current tick.
+     * @return
+     */
+    protected HashMap<ElectricitySpotMarket, Double> determineExpectedCO2PriceInclTaxAndFundamentalForecast(
+            long futureTimePoint, long yearsLookingBackForRegression, int adjustmentForDetermineFuelMix,
+            long clearingTick) {
+        HashMap<ElectricitySpotMarket, Double> co2Prices = new HashMap<ElectricitySpotMarket, Double>();
+        CO2Auction co2Auction = reps.genericRepository.findFirst(CO2Auction.class);
+        Iterable<ClearingPoint> cps = reps.clearingPointRepository.findAllClearingPointsForMarketAndTimeRange(
+                co2Auction, clearingTick - yearsLookingBackForRegression + 1 - adjustmentForDetermineFuelMix,
+                clearingTick - adjustmentForDetermineFuelMix, false);
+        // Create regression object and calculate average
+        SimpleRegression sr = new SimpleRegression();
+        Government government = reps.template.findAll(Government.class).iterator().next();
+        double lastPrice = 0;
+        double averagePrice = 0;
+        int i = 0;
+        for (ClearingPoint clearingPoint : cps) {
+            sr.addData(clearingPoint.getTime(), clearingPoint.getPrice());
+            lastPrice = clearingPoint.getPrice();
+            averagePrice += lastPrice;
+            i++;
+        }
+        averagePrice = averagePrice / i;
+        double expectedCO2Price;
+        double expectedRegressionCO2Price;
+        if (i > 1) {
+            expectedRegressionCO2Price = sr.predict(futureTimePoint);
+            expectedRegressionCO2Price = Math.max(0, expectedRegressionCO2Price);
+            expectedRegressionCO2Price = Math
+                    .min(expectedRegressionCO2Price, government.getCo2Penalty(futureTimePoint));
+        } else {
+            expectedRegressionCO2Price = lastPrice;
+        }
+        ClearingPoint expectedCO2ClearingPoint = reps.clearingPointRepository.findClearingPointForMarketAndTime(
+                co2Auction, getCurrentTick()
+                        + reps.genericRepository.findFirst(DecarbonizationModel.class).getCentralForecastingYear(),
+                true);
+        expectedCO2Price = (expectedCO2ClearingPoint == null) ? 0 : expectedCO2ClearingPoint.getPrice();
+        expectedCO2Price = (expectedCO2Price + expectedRegressionCO2Price) / 2;
+        for (ElectricitySpotMarket esm : reps.marketRepository.findAllElectricitySpotMarkets()) {
+            double nationalCo2MinPriceinFutureTick = reps.nationalGovernmentRepository
+                    .findNationalGovernmentByElectricitySpotMarket(esm).getMinNationalCo2PriceTrend()
+                    .getValue(futureTimePoint);
+            double co2PriceInCountry = 0d;
+            if (expectedCO2Price > nationalCo2MinPriceinFutureTick) {
+                co2PriceInCountry = expectedCO2Price;
+            } else {
+                co2PriceInCountry = nationalCo2MinPriceinFutureTick;
+            }
+            co2PriceInCountry += reps.genericRepository.findFirst(Government.class).getCO2Tax(futureTimePoint);
+            co2Prices.put(esm, Double.valueOf(co2PriceInCountry));
+        }
+        return co2Prices;
     }
 
 }
