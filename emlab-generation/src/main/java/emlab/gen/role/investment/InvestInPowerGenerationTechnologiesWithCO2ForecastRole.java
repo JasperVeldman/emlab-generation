@@ -47,6 +47,7 @@ import emlab.gen.domain.market.electricity.Segment;
 import emlab.gen.domain.market.electricity.SegmentClearingPoint;
 import emlab.gen.domain.market.electricity.SegmentLoad;
 import emlab.gen.domain.policy.PowerGeneratingTechnologyTarget;
+import emlab.gen.domain.technology.HydroPowerPlant;
 import emlab.gen.domain.technology.Interconnector;
 import emlab.gen.domain.technology.PowerGeneratingTechnology;
 import emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit;
@@ -157,7 +158,7 @@ public class InvestInPowerGenerationTechnologiesWithCO2ForecastRole<T extends En
 
         for (PowerGeneratingTechnology technology : reps.genericRepository.findAll(PowerGeneratingTechnology.class)) {
 
-            if (technology.getName().equals("hydroPowerSC") || technology.getName().equals("hydroPowerNWE")) {
+            if (technology.getName().equals("hydroPower")) {
                 continue;
             }
 
@@ -666,9 +667,16 @@ public class InvestInPowerGenerationTechnologiesWithCO2ForecastRole<T extends En
 
                         }
                     }
+                } else {
+
+                    double help = 0;
+                    interconnectorA.put(help, help);
+                    interconnectorB.put(help, help);
+
                 }
 
             }
+
             double energyConstraint = market.getEnergyConstraintTrend().getEnergyValue();
 
             for (SegmentLoad segmentLoad : market.getLoadDurationCurve()) {
@@ -677,27 +685,25 @@ public class InvestInPowerGenerationTechnologiesWithCO2ForecastRole<T extends En
                 double hydroCapacity = 0;
                 double segmentID = segment.getSegmentID();
 
-                for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market,
-                        time)) {
+                for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalHydroPowerPlantsInMarket(
+                        market, time)) {
 
-                    if (plant.getTechnology().getName().equals("hydroPowerSC")
-                            || plant.getTechnology().getName().equals("hydroPowerNWE")) {
-                        hydroCapacity = plant.getExpectedAvailableHydroPowerCapacity(time, getCurrentTick(), segment,
-                                numberOfSegments, market, intermittentBase, intermittentPeak, intermittentTotal,
-                                energyConstraint, interconnectorA, interconnectorB, demandFactor);
+                    HydroPowerPlant hydroPlant = (HydroPowerPlant) plant;
+                    hydroCapacity = hydroPlant.getExpectedAvailableHydroPowerCapacity(time, getCurrentTick(), segment,
+                            numberOfSegments, market, intermittentBaseWindOffshore, intermittentPeak,
+                            intermittentTotal, energyConstraint, interconnectorA, interconnectorB, demandFactor);
 
-                        break;
-                    } else {
-                        continue;
-                    }
+                    break;
 
                 }
 
                 double interconnectorFlowSegment = 0;
-                if (market.getZone().getName().equals("Country A")) {
-                    interconnectorFlowSegment = -1 * interconnectorA.get(segmentID);
-                } else if (market.getZone().getName().equals("Country B")) {
-                    interconnectorFlowSegment = -1 * interconnectorB.get(segmentID);
+                if (reps.marketRepository.countAllElectricitySpotMarkets() == 2) {
+                    if (market.getZone().getName().equals("Country A")) {
+                        interconnectorFlowSegment = -1 * interconnectorA.get(segmentID);
+                    } else if (market.getZone().getName().equals("Country B")) {
+                        interconnectorFlowSegment = -1 * interconnectorB.get(segmentID);
+                    }
                 }
 
                 double expectedSegmentLoad = segmentLoad.getBaseLoad() * demandFactor - hydroCapacity

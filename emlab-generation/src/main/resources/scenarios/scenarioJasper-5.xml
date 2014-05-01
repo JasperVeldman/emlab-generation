@@ -24,7 +24,7 @@
 	<!-- Decarbonization Model -->
 	<bean id="decarbonizationModel" class="emlab.gen.domain.agent.DecarbonizationModel"
 		p:name="Decarbonization Model" p:simulationLength="${simulationLength}"
-		p:co2TradingImplemented="true"
+		p:co2TradingImplemented="false"
 		p:realRenewableDataImplemented="false"
 		p:iterationSpeedFactor="3" p:iterationSpeedCriterion="0.005"
 		p:capDeviationCriterion="0.03" p:deletionOldPPDPBidsAndCashFlowsEnabled="true"
@@ -34,10 +34,15 @@
 	<bean class="emlab.gen.trend.TriangularTrend" id="demandGrowthTrendNWE"
 		p:start="${demandGrowthNWEStart}" p:min="${demandGrowthNWEMin}" p:max="${demandGrowthNWEMax}"
 		p:top="${demandGrowthNWETop}" />
-		
+	<bean class="emlab.gen.trend.TriangularTrend" id="demandGrowthTrendSC"
+		p:start="${demandGrowthSCStart}" p:min="${demandGrowthSCMin}" p:max="${demandGrowthSCMax}"
+		p:top="${demandGrowthSCTop}" />
 	<bean class="emlab.gen.trend.TriangularTrend" id="energyConstraintTrendNWE"
 		p:start="24870000" p:min="21140000" p:max="29840000"
 		p:top="24870000" />
+	<bean class="emlab.gen.trend.TriangularTrend" id="energyConstraintTrendSC"
+		p:start="198380000" p:min="168620000" p:max="238050000"
+		p:top="198380000" />
 
 	<!-- Substances -->
 	<bean id="coal" class="emlab.gen.domain.technology.Substance" p:name="Coal"
@@ -59,63 +64,76 @@
 
 	<!-- Zones -->
 	<bean id="nwe" class="emlab.gen.domain.gis.Zone" p:name="Country A" />
+	<bean id="sc" class="emlab.gen.domain.gis.Zone" p:name="Country B" />
 
 	<!-- PowerGrid -->
 	<bean id="northwestEuropeNode" class="emlab.gen.domain.technology.PowerGridNode"
 	p:capacityMultiplicationFactor="1.0">
 		<property name="zone" ref="nwe" />
 	</bean>
-
-	<bean id="interconnectornorthwestEuropeGermany" class="emlab.gen.domain.technology.Interconnector"
-		p:capacity="${interconnectorCapacity}">
+	<bean id="scandinaviaNode" class="emlab.gen.domain.technology.PowerGridNode"
+	p:capacityMultiplicationFactor="1.0">
+		<property name="zone" ref="sc" />
+	</bean>
+	
+	<bean id="interconnectorNorthwestEuropeScandinavia" class="emlab.gen.domain.technology.Interconnector"
+		p:interconnectorCapacityTrend-ref = "interconnectorCapacityTrend" >
 		<property name="connections">
 			<set>
+				<ref bean="scandinaviaNode" />
 				<ref bean="northwestEuropeNode" />
 			</set>
 		</property>
 	</bean>
+	
+	
+	
+	<bean id="interconnectorCapacityTrend" class="emlab.gen.trend.StepTrend" p:start="${interconnectorCapacityStart}"
+		p:duration="${interconnectorCapacityDuration}" p:increment="${interconnectorCapacityIncrement}"
+		p:minValue="0" />
+
 
 	<!-- Segments of load duration curves -->
-			<bean id="segment1" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="10"
-				p:segmentID="20" />
-			<bean id="segment2" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="50"
-				p:segmentID="19" />
-			<bean id="segment3" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="18" />
-			<bean id="segment4" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="17" />
-			<bean id="segment5" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="16" />
-			<bean id="segment6" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="15" />
-			<bean id="segment7" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="14" />
-			<bean id="segment8" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="13" />
-			<bean id="segment9" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="12" />
-			<bean id="segment10" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="11" />
-			<bean id="segment11" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="10" />
-			<bean id="segment12" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="9" />
-			<bean id="segment13" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="8" />
-			<bean id="segment14" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="7" />
-			<bean id="segment15" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="6" />
-			<bean id="segment16" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="5" />
-			<bean id="segment17" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
-				p:segmentID="4" />
-			<bean id="segment18" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="50"
-				p:segmentID="3" />
-			<bean id="segment19" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="9"
-				p:segmentID="2" />
-			<bean id="segment20" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="1"
-				p:segmentID="1" />
+	<bean id="segment1" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="10"
+		p:segmentID="20" />
+	<bean id="segment2" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="50"
+		p:segmentID="19" />
+	<bean id="segment3" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="18" />
+	<bean id="segment4" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="17" />
+	<bean id="segment5" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="16" />
+	<bean id="segment6" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="15" />
+	<bean id="segment7" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="14" />
+	<bean id="segment8" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="13" />
+	<bean id="segment9" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="12" />
+	<bean id="segment10" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="11" />
+	<bean id="segment11" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="10" />
+	<bean id="segment12" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="9" />
+	<bean id="segment13" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="8" />
+	<bean id="segment14" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="7" />
+	<bean id="segment15" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="6" />
+	<bean id="segment16" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="5" />
+	<bean id="segment17" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="576"
+		p:segmentID="4" />
+	<bean id="segment18" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="50"
+		p:segmentID="3" />
+	<bean id="segment19" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="9"
+		p:segmentID="2" />
+	<bean id="segment20" class="emlab.gen.domain.market.electricity.Segment" p:lengthInHours="1"
+		p:segmentID="1" />
 
 	<!-- Markets -->
 	<!-- Electricity Spot -->
@@ -123,8 +141,8 @@
 		p:name="Country A electricity spot market" p:auction="false"
 		p:referencePrice="40" p:valueOfLostLoad="2000">
 		<property name="substance" ref="electricity" />
-		<property name="energyConstraintTrend" ref="energyConstraintTrendNWE" />
 		<property name="demandGrowthTrend" ref="demandGrowthTrendNWE" />
+		<property name="energyConstraintTrend" ref="energyConstraintTrendNWE" />
 		<property name="zone" ref="nwe" />
 
 		<property name="loadDurationCurve">
@@ -236,6 +254,500 @@
 		<property name="segment" ref="segment20" />
 	</bean>
 
+
+	<bean id="scandinaviaElectricitySpotMarket" class="emlab.gen.domain.market.electricity.ElectricitySpotMarket"
+		p:name="Country B electricity spot market" p:auction="false"
+		p:referencePrice="40" p:valueOfLostLoad="2000">
+		<property name="substance" ref="electricity" />
+		<property name="demandGrowthTrend" ref="demandGrowthTrendSC" />
+		<property name="energyConstraintTrend" ref="energyConstraintTrendSC" />
+		<property name="zone" ref="sc" />
+		<property name="loadDurationCurve">
+			<set>
+				<ref bean="segment1sc" />
+				<ref bean="segment2sc" />
+				<ref bean="segment3sc" />
+				<ref bean="segment4sc" />
+				<ref bean="segment5sc" />
+				<ref bean="segment6sc" />
+				<ref bean="segment7sc" />
+				<ref bean="segment8sc" />
+				<ref bean="segment9sc" />
+				<ref bean="segment10sc" />
+				<ref bean="segment11sc" />
+				<ref bean="segment12sc" />
+				<ref bean="segment13sc" />
+				<ref bean="segment14sc" />
+				<ref bean="segment15sc" />
+				<ref bean="segment16sc" />
+				<ref bean="segment17sc" />
+				<ref bean="segment18sc" />
+				<ref bean="segment19sc" />
+				<ref bean="segment20sc" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="segment1sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment1sc}">
+		<property name="segment" ref="segment1" />
+	</bean>
+	<bean id="segment2sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment2sc}">
+		<property name="segment" ref="segment2" />
+	</bean>
+	<bean id="segment3sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment3sc}">
+		<property name="segment" ref="segment3" />
+	</bean>
+	<bean id="segment4sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment4sc}">
+		<property name="segment" ref="segment4" />
+	</bean>
+	<bean id="segment5sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment5sc}">
+		<property name="segment" ref="segment5" />
+	</bean>
+	<bean id="segment6sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment6sc}">
+		<property name="segment" ref="segment6" />
+	</bean>
+	<bean id="segment7sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment7sc}">
+		<property name="segment" ref="segment7" />
+	</bean>
+	<bean id="segment8sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment8sc}">
+		<property name="segment" ref="segment8" />
+	</bean>
+	<bean id="segment9sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment9sc}">
+		<property name="segment" ref="segment9" />
+	</bean>
+	<bean id="segment10sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment10sc}">
+		<property name="segment" ref="segment10" />
+	</bean>
+	<bean id="segment11sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment11sc}">
+		<property name="segment" ref="segment11" />
+	</bean>
+	<bean id="segment12sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment12sc}">
+		<property name="segment" ref="segment12" />
+	</bean>
+	<bean id="segment13sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment13sc}">
+		<property name="segment" ref="segment13" />
+	</bean>
+	<bean id="segment14sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment14sc}">
+		<property name="segment" ref="segment14" />
+	</bean>
+	<bean id="segment15sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment15sc}">
+		<property name="segment" ref="segment15" />
+	</bean>
+	<bean id="segment16sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment16sc}">
+		<property name="segment" ref="segment16" />
+	</bean>
+	<bean id="segment17sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment17sc}">
+		<property name="segment" ref="segment17" />
+	</bean>
+	<bean id="segment18sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment18sc}">
+		<property name="segment" ref="segment18" />
+	</bean>
+	<bean id="segment19sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment19sc}">
+		<property name="segment" ref="segment19" />
+	</bean>
+	<bean id="segment20sc" class="emlab.gen.domain.market.electricity.SegmentLoad"
+		p:baseLoad="${segment20sc}">
+		<property name="segment" ref="segment20" />
+	</bean>
+
+	<!-- Long term contract types -->
+	<bean id="ltc1" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc1">
+		<property name="segments">
+			<set>
+				<ref bean="segment1" />
+				<ref bean="segment2" />
+				<ref bean="segment3" />
+				<ref bean="segment4" />
+				<ref bean="segment5" />
+				<ref bean="segment6" />
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc2" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc2">
+		<property name="segments">
+			<set>
+				<ref bean="segment2" />
+				<ref bean="segment3" />
+				<ref bean="segment4" />
+				<ref bean="segment5" />
+				<ref bean="segment6" />
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc3" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc3">
+		<property name="segments">
+			<set>
+				<ref bean="segment3" />
+				<ref bean="segment4" />
+				<ref bean="segment5" />
+				<ref bean="segment6" />
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc4" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc4">
+		<property name="segments">
+			<set>
+				<ref bean="segment4" />
+				<ref bean="segment5" />
+				<ref bean="segment6" />
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc5" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc5">
+		<property name="segments">
+			<set>
+				<ref bean="segment5" />
+				<ref bean="segment6" />
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc6" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc6">
+		<property name="segments">
+			<set>
+				<ref bean="segment6" />
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc7" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc7">
+		<property name="segments">
+			<set>
+				<ref bean="segment7" />
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc8" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc8">
+		<property name="segments">
+			<set>
+				<ref bean="segment8" />
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc9" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc9">
+		<property name="segments">
+			<set>
+				<ref bean="segment9" />
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc10" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc10">
+		<property name="segments">
+			<set>
+				<ref bean="segment10" />
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc11" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc11">
+		<property name="segments">
+			<set>
+				<ref bean="segment11" />
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc12" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc12">
+		<property name="segments">
+			<set>
+				<ref bean="segment12" />
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc13" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc13">
+		<property name="segments">
+			<set>
+				<ref bean="segment13" />
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc14" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc14">
+		<property name="segments">
+			<set>
+				<ref bean="segment14" />
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc15" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc15">
+		<property name="segments">
+			<set>
+				<ref bean="segment15" />
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc16" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc16">
+		<property name="segments">
+			<set>
+				<ref bean="segment16" />
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc17" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc17">
+		<property name="segments">
+			<set>
+				<ref bean="segment17" />
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc18" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc18">
+		<property name="segments">
+			<set>
+				<ref bean="segment18" />
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc19" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc19">
+		<property name="segments">
+			<set>
+				<ref bean="segment19" />
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<bean id="ltc20" class="emlab.gen.domain.contract.LongTermContractType"
+		p:name="ltc20">
+		<property name="segments">
+			<set>
+				<ref bean="segment20" />
+			</set>
+		</property>
+	</bean>
+
+	<!-- Long term contract types -->
+	<bean id="ltcDuration1" class="emlab.gen.domain.contract.LongTermContractDuration"
+		p:duration="1" />
+	<bean id="ltcDuration5" class="emlab.gen.domain.contract.LongTermContractDuration"
+		p:duration="5" />
+	<bean id="ltcDuration10" class="emlab.gen.domain.contract.LongTermContractDuration"
+		p:duration="10" />
+
 	<!-- Commodity Markets -->
 	<bean id="coalMarket" class="emlab.gen.domain.market.CommodityMarket"
 		p:auction="false" p:name="Coal market">
@@ -262,7 +774,7 @@
 
 	<!-- CO2 Auction -->
 	<bean id="co2Auction" class="emlab.gen.domain.market.CO2Auction"
-		p:auction="true" p:referencePrice="0" p:name="CO2 auction" p:substance-ref="co2"/>
+		p:auction="false" p:referencePrice="0" p:name="CO2 auction" p:substance-ref="co2"/>
 
 	<!-- Fuel Prices -->
 	<bean id="coalPrice" class="emlab.gen.trend.TriangularTrend" p:start="${coalPriceStart}"
@@ -315,6 +827,7 @@
 		<property name="name" value="Energy consumer" />
 	</bean>
 
+	
 	<bean id="energyProducerA" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer A" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -375,19 +888,152 @@
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
 		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
+	<bean id="energyProducerF" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer F" p:cash="${startCash}"
+		p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}" p:pastTimeHorizon="5"
+		p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+	<bean id="energyProducerG" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer G" p:cash="${startCash}"
+		p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}" p:pastTimeHorizon="5"
+		p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+	<bean id="energyProducerH" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer H" p:cash="${startCash}"
+		p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}" p:pastTimeHorizon="5"
+		p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
+		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+	<bean id="energyProducerI" class="emlab.gen.domain.agent.EnergyProducer"
+		p:name="Energy Producer I" p:cash="${startCash}"
+		p:investmentRole-ref="standardInvestmentRole"
+		p:longTermContractMargin="0.1" p:longTermContractPastTimeHorizon="3"
+		p:investmentFutureTimeHorizon="${investmentFutureTimeHorizon}" p:pastTimeHorizon="5"
+		p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+		p:debtRatioOfInvestments="0.7"
+		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
+		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
+		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
+		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
 
 	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesRole"/>
+		<bean id="targetInvestmentRole" class="emlab.gen.role.investment.TargetInvestmentRole"/>
+	
+	<!-- Renewable Targets Country A -->
+	
+	<bean id="renewableTargetInvestorCountryNWE" class="emlab.gen.domain.agent.TargetInvestor"
+	p:name="Renewable Target Investor Country NWE" p:cash="${startCash}"
+	p:investmentRole-ref="targetInvestmentRole"
+	p:priceMarkUp="1.0"
+	p:investorMarket-ref="northwestEuropeElectricitySpotMarket"
+	p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+	p:debtRatioOfInvestments="0.7">
+	<property name="powerGenerationTechnologyTargets">
+		<set>
+			<ref bean="windTargetNWE"/>
+			<ref bean="windOffshoreTargetNWE" />
+			<ref bean="biomassTargetNWE" />
+			<ref bean="pvTargetNWE" />
+		</set>
+	</property>
+	</bean>
+	
+	<bean id="windTargetNWE" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="windTrendNWE" p:powerGeneratingTechnology-ref="windPGT"/>
+	
+	<bean id="windTrendNWE" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetNWE.csv" p:delimiter=";" p:variableName="WindOnshore"/>
+	
+	<bean id="windOffshoreTargetNWE" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="windOffshoreTrendNWE" p:powerGeneratingTechnology-ref="windOffshorePGT"/>
+	
+	<bean id="windOffshoreTrendNWE" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetNWE.csv" p:delimiter=";" p:variableName="WindOffshore"/>
+	
+	<bean id="biomassTargetNWE" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="biomassTrendNWE" p:powerGeneratingTechnology-ref="biomassPGT"/>
+	
+	<bean id="biomassTrendNWE" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetNWE.csv" p:delimiter=";" p:variableName="Biomass"/> 
+	
+	<bean id="pvTargetNWE" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="pvTrendNWE" p:powerGeneratingTechnology-ref="photovoltaicPGT"/>
+	
+	<bean id="pvTrendNWE" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetNWE.csv" p:delimiter=";" p:variableName="Photovoltaic"/>
+	
+	<!-- Renewable Targets Country B -->
+	
+	<bean id="renewableTargetInvestorCountryB" class="emlab.gen.domain.agent.TargetInvestor"
+	p:name="Renewable Target Investor Country B" p:cash="${startCash}"
+	p:investmentRole-ref="targetInvestmentRole"
+	p:priceMarkUp="1.0"
+	p:investorMarket-ref="scandinaviaElectricitySpotMarket"
+	p:equityInterestRate="0.12" p:loanInterestRate="0.09"
+	p:debtRatioOfInvestments="0.7">
+	<property name="powerGenerationTechnologyTargets">
+		<set>
+			<ref bean="windTargetSC"/>
+			<ref bean="pvTargetSC" />
+			<ref bean="windOffshoreTargetSC"/>
+			<ref bean="biomassTargetSC"/>
+		</set>
+	</property>
+	</bean>
+
+	
+	<bean id="windTargetSC" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="windTrendSC" p:powerGeneratingTechnology-ref="windPGT"/>
+	
+	<bean id="windTrendSC" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetSC.csv" p:delimiter=";" p:variableName="WindOnshore"/>
+	
+	<bean id="windOffshoreTargetSC" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="windOffshoreTrendSC" p:powerGeneratingTechnology-ref="windOffshorePGT"/>
+	
+	<bean id="windOffshoreTrendSC" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetSC.csv" p:delimiter=";" p:variableName="WindOffshore"/>
+	
+	<bean id="biomassTargetSC" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="biomassTrendSC" p:powerGeneratingTechnology-ref="biomassPGT"/>
+	
+	<bean id="biomassTrendSC" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetSC.csv" p:delimiter=";" p:variableName="Biomass"/> 
+	
+	<bean id="pvTargetSC" class="emlab.gen.domain.policy.PowerGeneratingTechnologyTarget"
+	p:trend-ref="pvTrendSC" p:powerGeneratingTechnology-ref="photovoltaicPGT"/>
+	
+	<bean id="pvTrendSC" class="emlab.gen.trend.TimeSeriesCSVReader" p:filename="/data/resTargetSC.csv" p:delimiter=";" p:variableName="Photovoltaic"/>
+
 
 	<!-- PowerGenerationTechnology Node Limits -->
 	
-	<bean id="ligniteNodeLimitNwe" class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+	<bean id="ligniteNodeLimitNWE" class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
 	p:permanentUpperCapacityLimit="0">
 		<property name="powerGeneratingTechnology" ref="lignitePGT" />
 		<property name="powerGridNode" ref="northwestEuropeNode" />
 	</bean>
 	
+	<bean id="nuclearNodeLimitSC" class="emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit"
+	p:permanentUpperCapacityLimit="0">
+		<property name="powerGeneratingTechnology" ref="nuclearPGT" />
+		<property name="powerGridNode" ref="scandinaviaNode" />
+	</bean>
+	
+	
 	<!-- Initial portfolios -->
-
 
 	<bean id="powerPlantManufacturer" class="emlab.gen.domain.agent.PowerPlantManufacturer"
 		p:name="Power Plant Manufacturer" />
@@ -472,6 +1118,82 @@
 		</property>
 	</bean>
 
+	<bean id="scandinaviaPowerPortfolio" class="emlab.gen.domain.factory.ElectricityProducerFactory">
+		<property name="capacityMargin" value="0.41" />
+		<property name="portfolioShares">
+			<map>
+				<entry>
+					<key>
+						<ref bean="lignitePGT" />
+					</key>
+					<value>0</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="coalPulverizedSuperCritical" />
+					</key>
+					<value>0.0033</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="CCGT" />
+					</key>
+					<value>0.0043</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="OCGT" />
+					</key>
+					<value>0.0912</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="biomassPGT" />
+					</key>
+					<value>0.0459</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="nuclearPGT" />
+					</key>
+					<value>0.1332</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="windPGT" />
+					</key>
+					<value>0.0545</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="windOffshorePGT" />
+					</key>
+					<value>0.0023</value>
+				</entry>
+				<entry>
+					<key>
+						<ref bean="photovoltaicPGT" />
+					</key>
+					<value>0</value>
+				</entry>
+			</map>
+		</property>
+		<property name="nodes">
+			<set>
+				<ref bean="scandinaviaNode" />
+			</set>
+		</property>
+		<property name="market" ref="scandinaviaElectricitySpotMarket" />
+		<property name="producers">
+			<list>
+			<ref bean="energyProducerF" />
+				<ref bean="energyProducerG" />
+				<ref bean="energyProducerH" />
+				<ref bean="energyProducerI" />
+			</list>
+		</property>
+	</bean>
+
 	<!-- CO2 Tax -->
 	<bean id="co2TaxTrend" class="emlab.gen.trend.StepTrend" p:start="${co2TaxStart}"
 		p:duration="${co2TaxDuration}" p:increment="${co2TaxIncrement}"
@@ -483,14 +1205,17 @@
 		p:minValue="0" />
 
 	<!-- Minimum CO2 Price Trends -->
-	<bean id="minCo2PriceTrend" class="emlab.gen.trend.StepTrend" p:start="${minCo2PriceStart}"
-		p:duration="${minCo2PriceDuration}" p:increment="${minCo2PriceIncrement}"
+	<bean id="minCo2PriceTrend" class="emlab.gen.trend.StepTrend" p:start="${minCo2EUPriceStart}"
+		p:duration="${minCo2PriceDuration}" p:increment="${minCo2EUPriceIncrement}"
 		p:minValue="0" />
 		
-	<bean id="minCo2PriceTrendNWE" class="emlab.gen.trend.StepTrend" p:start="0"
-		p:duration="1" p:increment="0"
+	<bean id="minCo2PriceTrendNWE" class="emlab.gen.trend.StepTrend" p:start="${minCo2NWEPriceStart}"
+		p:duration="${minCo2NWEPriceDuration}" p:increment="${minCo2NWEPriceIncrement}"
 		p:minValue="0" />
 		
+	<bean id="minCo2PriceTrendSC" class="emlab.gen.trend.StepTrend" p:start="${minCo2SCPriceStart}"
+		p:duration="${minCo2SCPriceDuration}" p:increment="${minCo2SCPriceIncrement}"
+		p:minValue="0" />
 
 	<!-- Government -->
 	<bean id="government" class="emlab.gen.domain.agent.Government"
@@ -506,6 +1231,12 @@
 		<property name="governedZone" ref="nwe" />
 	</bean>
 	
+	<bean id="governmentSC" class="emlab.gen.domain.agent.NationalGovernment"
+		p:name="Country B Government">
+		<property name="minNationalCo2PriceTrend" ref="minCo2PriceTrendSC" />
+		<property name="governedZone" ref="sc" />
+	</bean>
+
 
 	<!-- Power Genration Technologies -->
 	<bean id="coalPulverizedSuperCritical" class="emlab.gen.domain.technology.PowerGeneratingTechnology"
@@ -840,8 +1571,8 @@
 	<bean id="nuclearInvestmentCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="2874800" />
 	<bean id="nuclearFixedOperatingCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="71870" />
 	<bean id="nuclearEfficiencyTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0.00001" p:start=".33" />
-	
-	<bean id="hydroPower" class="emlab.gen.domain.technology.PowerGeneratingTechnology"
+
+<bean id="hydroPower" class="emlab.gen.domain.technology.PowerGeneratingTechnology"
 		p:name="HydroPower" p:capacity="5870"
 		p:investmentCostTimeSeries-ref="hydroInvestmentCostTimeSeries"
 		p:fixedOperatingCostTimeSeries-ref="hydroFixedOperatingCostTimeSeries"
@@ -860,13 +1591,24 @@
 		
 	</bean>
 
-	 <bean id="hydroPowerNWELoan" class="emlab.gen.domain.contract.Loan"
+	 
+		 <bean id="hydroPowerNWELoan" class="emlab.gen.domain.contract.Loan"
 	 p:amountPerPayment="0"
 	 p:from-ref="energyProducerA"
 	 p:to-ref="bigBank"
 	 p:loanStartTime="-100"
 	 p:numberOfPaymentsDone="100"
 	 p:totalNumberOfPayments="100" />
+	 
+	 
+	 <bean id="hydroPowerSCLoan" class="emlab.gen.domain.contract.Loan"
+	 p:amountPerPayment="0"
+	 p:from-ref="energyProducerF"
+	 p:to-ref="bigBank"
+	 p:loanStartTime="-100"
+	 p:numberOfPaymentsDone="100"
+	 p:totalNumberOfPayments="100" />
+
 	
 	<bean id="hydroPowerNWEPlant" class="emlab.gen.domain.technology.HydroPowerPlant"
 	p:actualEfficiency="1"
@@ -886,14 +1628,31 @@
 	p:loan-ref="hydroPowerNWELoan"
 	 />
 	 
+	<bean id="hydroPowerSCPlant" class="emlab.gen.domain.technology.HydroPowerPlant"
+	p:actualEfficiency="1"
+	p:actualFixedOperatingCost="2115000000"
+	p:actualInvestedCapital="94000000000"
+	p:actualLeadtime="0"
+	p:actualLifetime="1000"
+	p:actualNominalCapacity="47000"
+	p:actualPermittime="0"
+	p:constructionStartTime="-100"
+	p:dismantleTime="1000"
+	p:expectedEndOfLife="1000"
+	p:location-ref="scandinaviaNode"
+	p:name="HydroPowerSC"
+	p:owner-ref="energyProducerF"
+	p:technology-ref="hydroPower"
+	p:loan-ref="hydroPowerSCLoan"
+	 />
+	
 	<bean id="hydroInvestmentCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="2000000" />
 	<bean id="hydroFixedOperatingCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="45000" />
 	<bean id="hydroEfficiencyTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="1" />
-
 	<!-- Parameter file -->
 	<bean id="projectPropertyConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:scenarios/parametersJasper-1.properties" />
+		<property name="location" value="classpath:scenarios/parametersJasper-5.properties" />
 	</bean>
 
 </beans>

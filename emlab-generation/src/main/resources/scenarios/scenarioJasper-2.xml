@@ -832,7 +832,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
 	<bean id="energyProducerB" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer B" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -844,7 +844,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
 	<bean id="energyProducerC" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer C" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -856,7 +856,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
 	<bean id="energyProducerD" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer D" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -868,7 +868,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
 	<bean id="energyProducerE" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer E" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -880,7 +880,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
+		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
 	<bean id="energyProducerF" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer F" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -891,7 +891,7 @@
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
 	<bean id="energyProducerG" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer G" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -902,7 +902,7 @@
 		p:dismantlingProlongingYearsAfterTechnicalLifetime="0"
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}"  p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
 	<bean id="energyProducerH" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer H" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -914,7 +914,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
 	<bean id="energyProducerI" class="emlab.gen.domain.agent.EnergyProducer"
 		p:name="Energy Producer I" p:cash="${startCash}"
 		p:investmentRole-ref="standardInvestmentRole"
@@ -926,7 +926,7 @@
 		p:dismantlingRequiredOperatingProfit="0" p:downpaymentFractionOfCash="0.5"
 		p:willingToInvest="true" p:priceMarkUp="${priceMarkUp}" 
 		p:numberOfYearsBacklookingForForecasting="${numberOfYearsBacklookingForForecasting}"
-		p:investorMarket-ref="northwestEuropeElectricitySpotMarket"/>
+		p:investorMarket-ref="scandinaviaElectricitySpotMarket"/>
 
 	<bean id="standardInvestmentRole" class="emlab.gen.role.investment.InvestInPowerGenerationTechnologiesRole"/>
 
@@ -1011,12 +1011,6 @@
 					</key>
 					<value>0.1113</value>
 				</entry>
-				<entry>
-					<key>
-						<ref bean="hydroPowerNWE" />
-					</key>
-					<value>0.020</value>
-				</entry>
 			</map>
 		</property>
 		<property name="nodes">
@@ -1027,10 +1021,11 @@
 		<property name="market" ref="northwestEuropeElectricitySpotMarket" />
 		<property name="producers">
 			<list>
-				<ref bean="energyProducerF" />
-				<ref bean="energyProducerG" />
-				<ref bean="energyProducerH" />
-				<ref bean="energyProducerI" />
+				<ref bean="energyProducerA" />
+				<ref bean="energyProducerB" />
+				<ref bean="energyProducerC" />
+				<ref bean="energyProducerD" />
+				<ref bean="energyProducerE" />
 			</list>
 		</property>
 	</bean>
@@ -1093,12 +1088,6 @@
 					</key>
 					<value>0</value>
 				</entry>
-				<entry>
-					<key>
-						<ref bean="hydroPowerSC" />
-					</key>
-					<value>0.6653</value>
-				</entry>
 			</map>
 		</property>
 		<property name="nodes">
@@ -1109,11 +1098,10 @@
 		<property name="market" ref="scandinaviaElectricitySpotMarket" />
 		<property name="producers">
 			<list>
-				<ref bean="energyProducerA" />
-				<ref bean="energyProducerB" />
-				<ref bean="energyProducerC" />
-				<ref bean="energyProducerD" />
-				<ref bean="energyProducerE" />
+				<ref bean="energyProducerF" />
+				<ref bean="energyProducerG" />
+				<ref bean="energyProducerH" />
+				<ref bean="energyProducerI" />
 			</list>
 		</property>
 	</bean>
@@ -1496,11 +1484,11 @@
 	<bean id="nuclearFixedOperatingCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="71870" />
 	<bean id="nuclearEfficiencyTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0.00001" p:start=".33" />
 
-<bean id="hydroPowerNWE" class="emlab.gen.domain.technology.PowerGeneratingTechnology"
-		p:name="hydroPowerNWE" p:capacity="5870"
-		p:investmentCostTimeSeries-ref="hydroNWEInvestmentCostTimeSeries"
-		p:fixedOperatingCostTimeSeries-ref="hydroNWEFixedOperatingCostTimeSeries"
-		p:efficiencyTimeSeries-ref="hydroNWEEfficiencyTimeSeries" 
+<bean id="hydroPower" class="emlab.gen.domain.technology.PowerGeneratingTechnology"
+		p:name="HydroPower" p:capacity="5870"
+		p:investmentCostTimeSeries-ref="hydroInvestmentCostTimeSeries"
+		p:fixedOperatingCostTimeSeries-ref="hydroFixedOperatingCostTimeSeries"
+		p:efficiencyTimeSeries-ref="hydroEfficiencyTimeSeries" 
 		p:co2CaptureEffciency="0" 
 		p:depreciationTime="25"
 		p:minimumRunningHours="0"
@@ -1515,32 +1503,63 @@
 		
 	</bean>
 	
-	<bean id="hydroNWEInvestmentCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="2000000" />
-	<bean id="hydroNWEFixedOperatingCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="45000" />
-	<bean id="hydroNWEEfficiencyTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="1" />
+	 <bean id="hydroPowerNWELoan" class="emlab.gen.domain.contract.Loan"
+	 p:amountPerPayment="0"
+	 p:from-ref="energyProducerA"
+	 p:to-ref="bigBank"
+	 p:loanStartTime="-100"
+	 p:numberOfPaymentsDone="100"
+	 p:totalNumberOfPayments="100" />
+	 
+	 
+	 <bean id="hydroPowerSCLoan" class="emlab.gen.domain.contract.Loan"
+	 p:amountPerPayment="0"
+	 p:from-ref="energyProducerF"
+	 p:to-ref="bigBank"
+	 p:loanStartTime="-100"
+	 p:numberOfPaymentsDone="100"
+	 p:totalNumberOfPayments="100" />
+
 	
-	<bean id="hydroPowerSC" class="emlab.gen.domain.technology.PowerGeneratingTechnology"
-		p:name="hydroPowerSC" p:capacity="47000"
-		p:investmentCostTimeSeries-ref="hydroSCInvestmentCostTimeSeries"
-		p:fixedOperatingCostTimeSeries-ref="hydroSCFixedOperatingCostTimeSeries"
-		p:efficiencyTimeSeries-ref="hydroSCEfficiencyTimeSeries" 
-		p:co2CaptureEffciency="0" 
-		p:depreciationTime="25"
-		p:minimumRunningHours="0"
-		p:fixedOperatingCostModifierAfterLifetime="0" p:expectedLifetime="14000"
-		p:expectedLeadtime="5" p:expectedPermittime="5" p:minimumFuelQuality="1"
-		p:maximumInstalledCapacityFractionInCountry="1"
-		p:maximumInstalledCapacityFractionPerAgent="1"
-		p:baseSegmentDependentAvailability="1"
-		p:peakSegmentDependentAvailability="1"
-		p:applicableForLongTermContract="true"
-		p:intermittent="false">
-		
-	</bean>
+	<bean id="hydroPowerNWEPlant" class="emlab.gen.domain.technology.HydroPowerPlant"
+	p:actualEfficiency="1"
+	p:actualFixedOperatingCost="264150000"
+	p:actualInvestedCapital="11740000000"
+	p:actualLeadtime="0"
+	p:actualLifetime="1000"
+	p:actualNominalCapacity="5870"
+	p:actualPermittime="0"
+	p:constructionStartTime="-100"
+	p:dismantleTime="1000"
+	p:expectedEndOfLife="1000"
+	p:location-ref="northwestEuropeNode"
+	p:name="HydroPowerNWE"
+	p:owner-ref="energyProducerA"
+	p:technology-ref="hydroPower"
+	p:loan-ref="hydroPowerNWELoan"
+	 />
+	 
+	<bean id="hydroPowerSCPlant" class="emlab.gen.domain.technology.HydroPowerPlant"
+	p:actualEfficiency="1"
+	p:actualFixedOperatingCost="2115000000"
+	p:actualInvestedCapital="94000000000"
+	p:actualLeadtime="0"
+	p:actualLifetime="1000"
+	p:actualNominalCapacity="47000"
+	p:actualPermittime="0"
+	p:constructionStartTime="-100"
+	p:dismantleTime="1000"
+	p:expectedEndOfLife="1000"
+	p:location-ref="scandinaviaNode"
+	p:name="HydroPowerSC"
+	p:owner-ref="energyProducerF"
+	p:technology-ref="hydroPower"
+	p:loan-ref="hydroPowerSCLoan"
+	 />
 	
-	<bean id="hydroSCInvestmentCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="2000000" />
-	<bean id="hydroSCFixedOperatingCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="45000" />
-	<bean id="hydroSCEfficiencyTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="1" />
+	<bean id="hydroInvestmentCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="2000000" />
+	<bean id="hydroFixedOperatingCostTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="45000" />
+	<bean id="hydroEfficiencyTimeSeries" class="emlab.gen.trend.GeometricTrend" p:growthRate="0" p:start="1" />
 	
 	<!-- Parameter file -->
 	<bean id="projectPropertyConfigurer"

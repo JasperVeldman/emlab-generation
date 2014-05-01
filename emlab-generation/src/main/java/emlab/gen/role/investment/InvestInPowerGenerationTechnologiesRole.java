@@ -43,6 +43,7 @@ import emlab.gen.domain.market.electricity.Segment;
 import emlab.gen.domain.market.electricity.SegmentClearingPoint;
 import emlab.gen.domain.market.electricity.SegmentLoad;
 import emlab.gen.domain.policy.PowerGeneratingTechnologyTarget;
+import emlab.gen.domain.technology.HydroPowerPlant;
 import emlab.gen.domain.technology.Interconnector;
 import emlab.gen.domain.technology.PowerGeneratingTechnology;
 import emlab.gen.domain.technology.PowerGeneratingTechnologyNodeLimit;
@@ -145,7 +146,7 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
 
         for (PowerGeneratingTechnology technology : reps.genericRepository.findAll(PowerGeneratingTechnology.class)) {
 
-            if (technology.getName().equals("hydroPowerSC") || technology.getName().equals("hydroPowerNWE")) {
+            if (technology.getName().equals("hydroPower")) {
                 continue;
             }
 
@@ -479,8 +480,8 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
             // get merit order for this market
             for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market, time)) {
 
-                if (plant.getTechnology().getName().equals("hydroPowerSC")
-                        || plant.getTechnology().getName().equals("hydroPowerNWE")) {
+                if (plant instanceof HydroPowerPlant) {
+                    HydroPowerPlant hydroPlant = (HydroPowerPlant) plant;
                     continue;
                 }
 
@@ -665,26 +666,34 @@ public class InvestInPowerGenerationTechnologiesRole<T extends EnergyProducer> e
                 double segmentID = segment.getSegmentID();
                 double hydroCapacity = 0;
 
-                for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalPowerPlantsInMarket(market,
-                        time)) {
+                for (PowerPlant plant : reps.powerPlantRepository.findExpectedOperationalHydroPowerPlantsInMarket(
+                        market, time)) {
 
-                    if (plant.getTechnology().getName().equals("hydroPowerSC")
-                            || plant.getTechnology().getName().equals("hydroPowerNWE")) {
-                        hydroCapacity = plant.getExpectedAvailableHydroPowerCapacity(time, getCurrentTick(), segment,
-                                numberOfSegments, market, intermittentBase, intermittentPeak, intermittentTotal,
-                                energyConstraint, interconnectorA, interconnectorB, demandFactor);
-                        break;
-                    } else {
-                        continue;
-                    }
+                    HydroPowerPlant hydroPlant = (HydroPowerPlant) plant;
+                    hydroCapacity = hydroPlant.getExpectedAvailableHydroPowerCapacity(time, getCurrentTick(), segment,
+                            numberOfSegments, market, intermittentBaseWindOffshore, intermittentPeak,
+                            intermittentTotal, energyConstraint, interconnectorA, interconnectorB, demandFactor);
+                    // hydroCapacity =
+                    // hydroPlant.getExpectedAvailableHydroPowerCapacity(time,
+                    // getCurrentTick(),
+                    // segment, numberOfSegments, market, intermittentBase,
+                    // intermittentPeak,
+                    // intermittentTotal, energyConstraint, interconnectorA,
+                    // interconnectorB, demandFactor);
+                    break;
 
                 }
+
                 double interconnectorFlowSegment = 0;
-                if (market.getZone().getName().equals("Country A")) {
-                    interconnectorFlowSegment = -1 * interconnectorA.get(segmentID);
-                } else if (market.getZone().getName().equals("Country B")) {
-                    interconnectorFlowSegment = -1 * interconnectorB.get(segmentID);
+                if (reps.marketRepository.countAllElectricitySpotMarkets() == 2) {
+                    if (market.getZone().getName().equals("Country A")) {
+                        interconnectorFlowSegment = -1 * interconnectorA.get(segmentID);
+                    } else if (market.getZone().getName().equals("Country B")) {
+                        interconnectorFlowSegment = -1 * interconnectorB.get(segmentID);
+                    }
                 }
+
+                logger.warn("InterconnectorFlow is {} for segment {}", hydroCapacity, segmentID);
 
                 double expectedSegmentLoad = segmentLoad.getBaseLoad() * demandFactor - hydroCapacity
                         + interconnectorFlowSegment;

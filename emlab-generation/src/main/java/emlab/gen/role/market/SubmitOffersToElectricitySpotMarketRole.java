@@ -36,6 +36,7 @@ import emlab.gen.domain.market.electricity.PowerPlantDispatchPlan;
 import emlab.gen.domain.market.electricity.Segment;
 import emlab.gen.domain.market.electricity.SegmentClearingPoint;
 import emlab.gen.domain.market.electricity.SegmentLoad;
+import emlab.gen.domain.technology.HydroPowerPlant;
 import emlab.gen.domain.technology.Interconnector;
 import emlab.gen.domain.technology.PowerGeneratingTechnology;
 import emlab.gen.domain.technology.PowerPlant;
@@ -275,13 +276,10 @@ public class SubmitOffersToElectricitySpotMarketRole extends AbstractEnergyProdu
 
             logger.info("Submitting offers for {} with technology {}", plant.getName(), plant.getTechnology().getName());
 
-            if (plant.getActualNominalCapacity() == 5870 || plant.getActualNominalCapacity() == 47000) {
+            if (plant instanceof HydroPowerPlant) {
+                HydroPowerPlant hydroPlant = (HydroPowerPlant) plant;
+                energyConstraint = market.getEnergyConstraintTrend().getEnergyValue();
 
-                if (plant.getTechnology().getName().equals("hydroPowerSC")
-                        || plant.getTechnology().getName().equals("hydroPowerNWE")) {
-                    energyConstraint = market.getEnergyConstraintTrend().getEnergyValue();
-
-                }
             }
 
             for (SegmentLoad segmentload : market.getLoadDurationCurve()) {
@@ -295,18 +293,14 @@ public class SubmitOffersToElectricitySpotMarketRole extends AbstractEnergyProdu
                     capacity = plant.getExpectedAvailableCapacity(tick, segment, numberOfSegments);
                 }
 
-                if (plant.getActualNominalCapacity() == 5870 || plant.getActualNominalCapacity() == 47000) {
+                if (plant instanceof HydroPowerPlant) {
+                    HydroPowerPlant hydroPlant = (HydroPowerPlant) plant;
+                    capacity = hydroPlant.getAvailableHydroPowerCapacity(getCurrentTick(), segment, numberOfSegments,
+                            market, intermittentBase, intermittentPeak, intermittentTotal, energyConstraint,
+                            interconnectorA, interconnectorB);
 
-                    if (plant.getTechnology().getName().equals("hydroPowerSC")
-                            || plant.getTechnology().getName().equals("hydroPowerNWE")) {
-                        capacity = plant.getAvailableHydroPowerCapacity(getCurrentTick(), segment, numberOfSegments,
-                                market, intermittentBase, intermittentPeak, intermittentTotal, energyConstraint,
-                                interconnectorA, interconnectorB);
-
-                        price = 0;
-                        logger.warn("I OFFER {} MW HYDROPOWER for segment {} in country {}", capacity, segmentID);
-
-                    }
+                    price = 0;
+                    logger.warn("I OFFER {} MW HYDROPOWER for segment {} in country {}", capacity, segmentID);
 
                 } else {
 
